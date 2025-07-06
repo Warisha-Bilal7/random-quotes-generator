@@ -93,7 +93,7 @@ export default function Home() {
             ) : (
               <>
                 <blockquote className="text-2xl md:text-3xl font-light text-gray-800 mb-6 leading-relaxed">
-                  "{quote}"
+                  &quot;{quote}&quot;
                 </blockquote>
                 {author && (
                   <cite className="text-lg text-gray-600 font-medium">
