@@ -1,103 +1,128 @@
-import Image from "next/image";
+'use client';
+
+import { useState, useEffect } from 'react';
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [quote, setQuote] = useState('');
+  const [author, setAuthor] = useState('');
+  const [topics, setTopics] = useState([]);
+  const [selectedTopic, setSelectedTopic] = useState('motivation');
+  const [isLoading, setIsLoading] = useState(false);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  // Fetch available topics on component mount
+  useEffect(() => {
+    fetchTopics();
+    fetchQuote('motivation'); // Load a default quote
+  }, []);
+
+  const fetchTopics = async () => {
+    try {
+      const response = await fetch('/api/topics');
+      const data = await response.json();
+      setTopics(data.topics);
+    } catch (error) {
+      console.error('Error fetching topics:', error);
+    }
+  };
+
+  const fetchQuote = async (topic) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`/api/quotes/${topic}`);
+      const data = await response.json();
+      setQuote(data.quote);
+      setAuthor(data.author);
+    } catch (error) {
+      console.error('Error fetching quote:', error);
+      setQuote('Error loading quote. Please try again.');
+      setAuthor('');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleTopicChange = (topic) => {
+    setSelectedTopic(topic);
+    fetchQuote(topic);
+  };
+
+  const handleNewQuote = () => {
+    fetchQuote(selectedTopic);
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4">
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-4xl font-bold text-center text-gray-800 mb-12">
+          Random Quotes Generator
+        </h1>
+        
+        {/* Topic Selection */}
+        <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
+          <h2 className="text-xl font-semibold text-gray-700 mb-4">Choose a Topic:</h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            {topics.map((topic) => (
+              <button
+                key={topic}
+                onClick={() => handleTopicChange(topic)}
+                className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                  selectedTopic === topic
+                    ? 'bg-blue-500 text-white shadow-md'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                {topic.charAt(0).toUpperCase() + topic.slice(1)}
+              </button>
+            ))}
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+        {/* Quote Display */}
+        <div className="bg-white rounded-lg shadow-lg p-8 mb-8 relative">
+          <div className="absolute top-4 left-4 text-6xl text-rose-200 font-serif leading-none">
+            &quot;
+          </div>
+          <div className="absolute bottom-4 right-4 text-6xl text-rose-200 font-serif leading-none">
+            &quot;
+          </div>
+          <div className="text-center">
+            {isLoading ? (
+              <div className="flex justify-center items-center h-32">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+              </div>
+            ) : (
+              <>
+                <blockquote className="text-2xl md:text-3xl font-light text-gray-800 mb-6 leading-relaxed">
+                  "{quote}"
+                </blockquote>
+                {author && (
+                  <cite className="text-lg text-gray-600 font-medium">
+                    — {author}
+                  </cite>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* New Quote Button */}
+        <div className="text-center">
+          <button
+            onClick={handleNewQuote}
+            disabled={isLoading}
+            className="bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition-all duration-200 transform hover:scale-105"
+          >
+            {isLoading ? 'Loading...' : 'New Quote'}
+          </button>
+        </div>
+
+        {/* Footer */}
+        <footer className="text-center mt-12 text-gray-600">
+          <p className="text-amber-700 font-serif italic text-lg">
+            &quot;In every book lies the soul of the whole past time&quot;
+          </p>
+        </footer>
+      </div>
     </div>
   );
 }
